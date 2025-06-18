@@ -1,0 +1,29 @@
+# .github/workflows/publish_article.yml
+name: Publish Article
+
+on:
+  schedule:
+    - cron: '0 10 * * *' # Every day at 10 AM IST
+  workflow_dispatch: # Allow manual trigger
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Run the publishing script
+        env:
+          MEDIUM_TOKEN: ${{ secrets.MEDIUM_TOKEN }}
+        run: python publish.py
