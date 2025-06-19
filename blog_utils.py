@@ -27,7 +27,7 @@ def fetch_blog_ideas(topic):
 def select_top_topics(ideas):
     prompt = f"Select the 5 most informative blog ideas from this list and explain why:\n{ideas}"
     res = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
     lines = res.choices[0].message.content.split("\n")
@@ -37,7 +37,7 @@ def select_top_topics(ideas):
 def generate_blog(topic):
     prompt = f"Write a simple-English blog post with technical terms on: {topic}"
     res = client.chat.completions.create(
-        model="gpt-4",
+        model="gpt-3.5-turbo",
         messages=[{"role": "user", "content": prompt}]
     )
     return res.choices[0].message.content
