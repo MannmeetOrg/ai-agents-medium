@@ -1,13 +1,14 @@
 # blog_utils.py
 import random, os
 import requests
-import openai
 from dotenv import load_dotenv
-from openai import OpenAIError
+import google.generativeai as genai
 
 load_dotenv()
 
-client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+# Gemini setup
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
+model = genai.GenerativeModel("gemini-pro")
 
 
 def choose_topic():
@@ -29,31 +30,20 @@ def fetch_blog_ideas(topic):
 def select_top_topics(ideas):
     prompt = f"Select the 5 most informative blog ideas from this list and explain why:\n{ideas}"
     try:
-        res = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-    except OpenAIError:
-        print("⚠️ GPT-4 failed. Falling back to GPT-3.5-turbo...")
-        res = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-    lines = res.choices[0].message.content.split("\n")
+        response = model.generate_content(prompt)
+        content = response.text
+    except Exception as e:
+        print(f"⚠️ Gemini API failed: {e}")
+        return ideas[:5]
+    lines = content.split("\n")
     return [line for line in lines if line.strip()][:5]
 
 
 def generate_blog(topic):
-    prompt = f"Write a simple-English blog post with technical terms on: {topic}"
+    prompt = f"Write a blog post in simple English with technical terms on: {topic}"
     try:
-        res = client.chat.completions.create(
-            model="gpt-4",
-            messages=[{"role": "user", "content": prompt}]
-        )
-    except OpenAIError:
-        print("⚠️ GPT-4 failed. Falling back to GPT-3.5-turbo...")
-        res = client.chat.completions.create(
-            model="gpt-3.5-turbo",
-            messages=[{"role": "user", "content": prompt}]
-        )
-    return res.choices[0].message.content
+        response = model.generate_content(prompt)
+        return response.text
+    except Exception as e:
+        print(f"⚠️ Gemini API failed: {e}")
+        return f"Blog generation failed for topic: {topic}"

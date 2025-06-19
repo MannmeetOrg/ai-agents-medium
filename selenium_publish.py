@@ -22,10 +22,10 @@ def publish_to_medium(title, content):
 
     try:
         driver.get("https://medium.com/m/signin")
-        time.sleep(2)
+        time.sleep(3)
 
         driver.find_element(By.XPATH, "//button[contains(text(), 'Sign in with email')]").click()
-        time.sleep(2)
+        time.sleep(3)
 
         email_input = driver.find_element(By.NAME, "email")
         email_input.send_keys(os.getenv("MEDIUM_USERNAME"))
@@ -51,13 +51,13 @@ def publish_to_medium(title, content):
             para_box.send_keys(Keys.ENTER)
             time.sleep(0.1)
 
-        time.sleep(2)
         publish_btn = driver.find_element(By.XPATH, "//button[.='Publish']")
         publish_btn.click()
         time.sleep(2)
 
         final_publish_btn = driver.find_element(By.XPATH, "//button[.='Publish now']")
         final_publish_btn.click()
+
         print("✅ Blog published successfully.")
 
     except Exception as e:

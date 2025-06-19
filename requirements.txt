@@ -1,6 +1,6 @@
 # requirements.txt
-openai>=1.0.0
 requests
 python-dotenv
 selenium
 webdriver-manager
+google-generativeai
