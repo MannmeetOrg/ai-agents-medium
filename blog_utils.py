@@ -5,8 +5,8 @@ import openai
 from dotenv import load_dotenv
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
 
+client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 def choose_topic():
     return random.choice(["DevOps", "AI", "Microservices", "Cloud"])
@@ -26,7 +26,7 @@ def fetch_blog_ideas(topic):
 
 def select_top_topics(ideas):
     prompt = f"Select the 5 most informative blog ideas from this list and explain why:\n{ideas}"
-    res = openai.ChatCompletion.create(
+    res = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )
@@ -36,7 +36,7 @@ def select_top_topics(ideas):
 
 def generate_blog(topic):
     prompt = f"Write a simple-English blog post with technical terms on: {topic}"
-    res = openai.ChatCompletion.create(
+    res = client.chat.completions.create(
         model="gpt-4",
         messages=[{"role": "user", "content": prompt}]
     )

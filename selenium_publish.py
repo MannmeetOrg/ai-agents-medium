@@ -24,7 +24,7 @@ def publish_to_medium(title, content):
         driver.get("https://medium.com/m/signin")
         time.sleep(2)
 
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Sign in with email')]" ).click()
+        driver.find_element(By.XPATH, "//button[contains(text(), 'Sign in with email')]").click()
         time.sleep(2)
 
         email_input = driver.find_element(By.NAME, "email")
