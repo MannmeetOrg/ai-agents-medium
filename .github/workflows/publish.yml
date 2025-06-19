@@ -20,7 +20,7 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y xvfb
-          pip install -r requirements.txt
+          pip install -r requirement.txt
 
       - name: Run Blog Agent Script
         env:
