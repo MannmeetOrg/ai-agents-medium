@@ -1,4 +1,5 @@
 import json
+import os
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -7,6 +8,17 @@ from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 from webdriver_manager.chrome import ChromeDriverManager
+
+def save_blog_to_file(title, content):
+    safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '_', '-')).rstrip()
+    filename = f"blog_output/{safe_title.replace(' ', '_')}.md"
+
+    os.makedirs("blog_output", exist_ok=True)
+
+    with open(filename, "w", encoding="utf-8") as f:
+        f.write(f"# {title}\n\n{content}")
+
+    print(f"📝 Blog saved locally as {filename}")
 
 def publish_to_medium(title, content):
     options = Options()
@@ -27,7 +39,6 @@ def publish_to_medium(title, content):
             cookies = json.load(f)
 
         for cookie in cookies:
-            # Clean invalid fields
             if "sameSite" in cookie and cookie["sameSite"] not in ["Lax", "Strict", "None"]:
                 del cookie["sameSite"]
             for field in ["storeId", "hostOnly", "session", "id"]:
