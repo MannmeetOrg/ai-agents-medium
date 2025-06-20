@@ -1,44 +1,43 @@
 import os
-import requests
 import google.generativeai as genai
+from dotenv import load_dotenv
+from serpapi import GoogleSearch
 
-SERPAPI_KEY = os.getenv("SERPAPI_KEY")
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
+load_dotenv()
 
-genai.configure(api_key=GEMINI_API_KEY)
+GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
+genai.configure(api_key=GOOGLE_API_KEY)
 
-def fetch_topic_ideas(topic):
-    url = "https://serpapi.com/search.json"
-    params = {
-        "q": topic + " blog ideas",
-        "hl": "en",
-        "gl": "us",
-        "api_key": SERPAPI_KEY,
-    }
-    response = requests.get(url, params=params)
-    results = response.json()
-    ideas = [item['title'] for item in results.get("organic_results", [])[:10]]
-    return ideas
-
-def select_top_topics(ideas):
-    prompt = """Select the 5 most useful and interesting blog topics from the list below:
-
-{}""".format("\n".join(f"- {i}" for i in ideas))
+def get_model():
     try:
-        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
-        response = model.generate_content(prompt)
-    except Exception:
-        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
-        response = model.generate_content(prompt)
-    lines = [line.strip("- ") for line in response.text.split("\n") if line.strip()]
-    return lines[:5]
+        return genai.GenerativeModel("gemini-1.5-flash")
+    except:
+        return genai.GenerativeModel("gemini-1.5-pro")
+
+def fetch_blog_ideas(query):
+    search = GoogleSearch({
+        "q": f"{query} blog ideas",
+        "api_key": os.getenv("SERPAPI_KEY")
+    })
+    results = search.get_dict()
+    return [r["title"] for r in results.get("organic_results", []) if "title" in r]
+
+def get_best_topic(preferred_topics):
+    ideas = []
+    for topic in preferred_topics:
+        ideas += fetch_blog_ideas(topic)
+
+    prompt = f"""You are a professional content strategist. Choose the 5 most interesting and educational blog post topics from the list below. Only return the selected titles:
+{ideas}
+"""
+    model = get_model()
+    response = model.generate_content(prompt)
+    lines = response.text.strip().splitlines()
+    filtered = [line.strip("- ").strip() for line in lines if line.strip()]
+    return filtered[0] if filtered else "DevOps Trends in 2025"
 
 def generate_blog(topic):
-    prompt = f"Write a detailed blog post on the topic: '{topic}' in simple, clear language for beginners. Include examples and use technical terms only when helpful."
-    try:
-        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
-        response = model.generate_content(prompt)
-    except Exception:
-        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
-        response = model.generate_content(prompt)
-    return topic, response.text.strip()
+    prompt = f"""Write a 500-word SEO-friendly blog post titled '{topic}'. Structure it with an engaging introduction, 3 subheadings with details, and a conclusion. Make it professional yet readable."""
+    model = get_model()
+    response = model.generate_content(prompt)
+    return topic, response.text
