@@ -1,14 +1,14 @@
 # README.md
 
-## 🤖 AI Blog Agent with Gemini Pro & Medium Automation
+## 🤖 AI Blog Agent with Gemini Flash & Medium Automation
 
-Automatically generate and publish blog articles on Medium using AI-generated content with Gemini Pro, topic ideas from Google Search, and Selenium automation.
+Automatically generate and publish blog articles on Medium using AI-generated content with **Gemini Flash** (fallback to Pro 2.5), topic ideas from Google Search, and Selenium automation.
 
 ---
 
 ## 🚀 Features
 - 🔍 Automatically select trending tech topics (DevOps, AI, Cloud, Microservices)
-- 🤖 Uses **Gemini Pro** (Google Generative AI) for idea refinement and blog generation
+- 🤖 Uses **Gemini Flash** (fallback to **Pro 2.5**) for idea refinement and blog generation
 - 🌐 Uses **SerpAPI** to search for blog ideas
 - ✍️ Publishes blogs to your **Medium.com** account using Selenium and saved cookies
 - 🛠️ Integrated with **GitHub Actions** to run as a CI/CD automation pipeline
@@ -16,7 +16,7 @@ Automatically generate and publish blog articles on Medium using AI-generated co
 ---
 
 ## 🧩 Technologies Used
-- [Gemini Pro API](https://makersuite.google.com/app/apikey)
+- [Gemini API (Flash or Pro 2.5)](https://makersuite.google.com/app/apikey)
 - [SerpAPI](https://serpapi.com)
 - [Selenium](https://selenium.dev)
 - GitHub Actions
@@ -25,10 +25,10 @@ Automatically generate and publish blog articles on Medium using AI-generated co
 
 ## 📁 Project Structure
 ```
-├── .env.example              # Environment variables template
+├── .env                      # API keys for Gemini & SerpAPI
 ├── main.py                   # Pipeline entrypoint
-├── blog_utils.py             # Gemini Pro logic for content generation
-├── selenium_publish.py       # Medium.com publishing automation via cookies
+├── blog_utils.py             # Gemini logic with fallback support
+├── selenium_publish.py       # Medium.com publishing automation using cookies.json
 ├── cookies.json              # Exported cookies for Medium login
 ├── requirements.txt          # Python dependencies
 └── .github/workflows/publish.yml  # GitHub Actions pipeline
@@ -45,9 +45,13 @@ cd ai-blog-agent
 ```
 
 ### 2️⃣ Create `.env` File
-Copy the example and fill in your credentials:
 ```bash
 cp .env.example .env
+```
+Add your credentials to `.env`:
+```
+GEMINI_API_KEY=your_key_here
+SERPAPI_KEY=your_serpapi_key_here
 ```
 
 ### 3️⃣ Install Dependencies
@@ -56,14 +60,14 @@ pip install -r requirements.txt
 ```
 
 ### 4️⃣ Set Up GitHub Secrets (Optional for CI)
-Go to your repo → **Settings → Secrets → Actions** → Add the following:
+In your GitHub repo → **Settings → Secrets → Actions**:
 - `GEMINI_API_KEY`
 - `SERPAPI_KEY`
 
 ### 5️⃣ Export Cookies from Medium
-1. Open Chrome → Log in to [https://medium.com](https://medium.com)
-2. Use [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)
-3. Export cookies and save as `cookies.json` in your project root
+1. Open [https://medium.com](https://medium.com) and login.
+2. Use [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) to export cookies.
+3. Save the exported cookies as `cookies.json` in your project root.
 
 ### 6️⃣ Run Locally (Headless)
 ```bash
@@ -71,14 +75,14 @@ xvfb-run python main.py
 ```
 
 ### 7️⃣ Trigger via GitHub Action
-Go to **Actions tab** → Run the `Publish Blog to Medium (Gemini)` workflow manually.
+Use **Actions** tab → `Publish Blog to Medium (Gemini)` workflow.
 
 ---
 
 ## 📌 Notes
-- Medium no longer supports password login via automation; cookie-based login is required
-- Gemini Pro offers **60 free API calls/day** — sufficient for daily blogs
-- SerpAPI requires a free or paid key — sign up at [serpapi.com](https://serpapi.com)
+- Cookie-based login is used due to Medium's restriction on automation
+- Gemini Flash is fast and economical; Pro 2.5 fallback ensures reliability
+- SerpAPI provides structured blog search results
 
 ---
 
@@ -93,9 +97,9 @@ Top 5 topics: [...]
 ---
 
 ## 📜 License
-MIT License. Feel free to fork and build your AI blogging army!
+MIT License. Fork freely and start your blog automation!
 
 ---
 
 ## 🙋‍♀️ Created by
-**@manmeet.ai** — For learning, AI automation, and DevOps ❤️
+**@manmeet.ai** — AI, DevOps & Content Automation ❤️

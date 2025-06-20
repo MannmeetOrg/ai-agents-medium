@@ -1,51 +1,44 @@
-# blog_utils.py
-import random, os
+import os
 import requests
-from dotenv import load_dotenv
 import google.generativeai as genai
-import pkg_resources
 
-print("Google GenAI SDK version:", pkg_resources.get_distribution("google-generativeai").version)
+SERPAPI_KEY = os.getenv("SERPAPI_KEY")
+GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 
-load_dotenv()
+genai.configure(api_key=GEMINI_API_KEY)
 
-# Gemini setup
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel(model_name="models/gemini-pro")
-
-def choose_topic():
-    return random.choice(["DevOps", "AI", "Microservices", "Cloud"])
-
-
-def fetch_blog_ideas(topic):
-    url = "https://serpapi.com/search"
+def fetch_topic_ideas(topic):
+    url = "https://serpapi.com/search.json"
     params = {
-        "q": f"{topic} blog ideas",
-        "api_key": os.getenv("SERPAPI_KEY"),
-        "num": 10,
-        "engine": "google"
+        "q": topic + " blog ideas",
+        "hl": "en",
+        "gl": "us",
+        "api_key": SERPAPI_KEY,
     }
-    res = requests.get(url, params=params)
-    return [r['title'] for r in res.json().get('organic_results', [])][:10]
-
+    response = requests.get(url, params=params)
+    results = response.json()
+    ideas = [item['title'] for item in results.get("organic_results", [])[:10]]
+    return ideas
 
 def select_top_topics(ideas):
-    prompt = f"Select the 5 most informative blog ideas from this list and explain why:\n{ideas}"
-    try:
-        response = model.generate_content(prompt)
-        content = response.text
-    except Exception as e:
-        print(f"⚠️ Gemini API failed: {e}")
-        return ideas[:5]
-    lines = content.split("\n")
-    return [line for line in lines if line.strip()][:5]
+    prompt = """Select the 5 most useful and interesting blog topics from the list below:
 
+{}""".format("\n".join(f"- {i}" for i in ideas))
+    try:
+        model = genai.GenerativeModel("gemini-1.5-flash")
+        response = model.generate_content(prompt)
+    except Exception:
+        model = genai.GenerativeModel("gemini-1.5-pro")
+        response = model.generate_content(prompt)
+    lines = [line.strip("- ") for line in response.text.split("\n") if line.strip()]
+    return lines[:5]
 
 def generate_blog(topic):
-    prompt = f"Write a blog post in simple English with technical terms on: {topic}"
+    prompt = f"Write a detailed blog post on the topic: '{topic}' in simple, clear language for beginners. Include examples and use technical terms only when helpful."
     try:
+        model = genai.GenerativeModel("gemini-1.5-pro")
         response = model.generate_content(prompt)
-        return response.text
-    except Exception as e:
-        print(f"⚠️ Gemini API failed: {e}")
-        return f"Blog generation failed for topic: {topic}"
+    except Exception:
+        model = genai.GenerativeModel("gemini-pro")
+        response = model.generate_content(prompt)
+    return topic, response.text.strip()
