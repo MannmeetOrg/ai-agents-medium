@@ -1,5 +1,4 @@
-# selenium_publish.py
-import os
+import json
 import time
 from selenium import webdriver
 from selenium.webdriver.common.by import By
@@ -7,10 +6,19 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.chrome.options import Options
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
-from dotenv import load_dotenv
 
-load_dotenv()
-
+def load_cookies(driver, path):
+    with open(path, "r") as file:
+        cookies = json.load(file)
+        for cookie in cookies:
+            if 'sameSite' in cookie and cookie['sameSite'] == 'None':
+                cookie['sameSite'] = 'Strict'
+            if 'expiry' in cookie:
+                cookie['expiry'] = int(cookie['expiry'])
+            try:
+                driver.add_cookie(cookie)
+            except Exception as e:
+                print(f"Skipping cookie due to error: {e}")
 
 def publish_to_medium(title, content):
     chrome_options = Options()
@@ -21,29 +29,21 @@ def publish_to_medium(title, content):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=chrome_options)
 
     try:
-        driver.get("https://medium.com/m/signin")
-        time.sleep(3)
+        # Load Medium with cookies
+        driver.get("https://medium.com/")
+        driver.delete_all_cookies()
+        load_cookies(driver, "cookies.json")
 
-        driver.find_element(By.XPATH, "//button[contains(text(), 'Sign in with email')]").click()
-        time.sleep(3)
-
-        email_input = driver.find_element(By.NAME, "email")
-        email_input.send_keys(os.getenv("MEDIUM_USERNAME"))
-        email_input.send_keys(Keys.RETURN)
-        time.sleep(3)
-
-        password_input = driver.find_element(By.NAME, "password")
-        password_input.send_keys(os.getenv("MEDIUM_PASSWORD"))
-        password_input.send_keys(Keys.RETURN)
-        time.sleep(5)
-
+        # Navigate to new story page
         driver.get("https://medium.com/new-story")
         time.sleep(5)
 
+        # Fill title
         title_box = driver.find_element(By.TAG_NAME, "h1")
         title_box.click()
         title_box.send_keys(title)
 
+        # Fill content
         para_box = driver.find_element(By.XPATH, "//div[@role='textbox']")
         para_box.click()
         for line in content.split("\n"):
@@ -51,16 +51,16 @@ def publish_to_medium(title, content):
             para_box.send_keys(Keys.ENTER)
             time.sleep(0.1)
 
+        # Click Publish buttons
         publish_btn = driver.find_element(By.XPATH, "//button[.='Publish']")
         publish_btn.click()
         time.sleep(2)
 
         final_publish_btn = driver.find_element(By.XPATH, "//button[.='Publish now']")
         final_publish_btn.click()
-
         print("✅ Blog published successfully.")
 
     except Exception as e:
-        print("❌ Error publishing to Medium:", str(e))
+        print("❌ Error publishing to Medium:", e)
     finally:
         driver.quit()

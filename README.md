@@ -10,7 +10,7 @@ Automatically generate and publish blog articles on Medium using AI-generated co
 - 🔍 Automatically select trending tech topics (DevOps, AI, Cloud, Microservices)
 - 🤖 Uses **Gemini Pro** (Google Generative AI) for idea refinement and blog generation
 - 🌐 Uses **SerpAPI** to search for blog ideas
-- ✍️ Publishes blogs to your **Medium.com** account using Selenium (headless browser)
+- ✍️ Publishes blogs to your **Medium.com** account using Selenium and saved cookies
 - 🛠️ Integrated with **GitHub Actions** to run as a CI/CD automation pipeline
 
 ---
@@ -28,7 +28,8 @@ Automatically generate and publish blog articles on Medium using AI-generated co
 ├── .env.example              # Environment variables template
 ├── main.py                   # Pipeline entrypoint
 ├── blog_utils.py             # Gemini Pro logic for content generation
-├── selenium_publish.py       # Medium.com publishing automation
+├── selenium_publish.py       # Medium.com publishing automation via cookies
+├── cookies.json              # Exported cookies for Medium login
 ├── requirements.txt          # Python dependencies
 └── .github/workflows/publish.yml  # GitHub Actions pipeline
 ```
@@ -54,26 +55,29 @@ cp .env.example .env
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Set Up GitHub Secrets
+### 4️⃣ Set Up GitHub Secrets (Optional for CI)
 Go to your repo → **Settings → Secrets → Actions** → Add the following:
 - `GEMINI_API_KEY`
 - `SERPAPI_KEY`
-- `MEDIUM_USERNAME`
-- `MEDIUM_PASSWORD`
 
-### 5️⃣ Run Locally (Headless)
+### 5️⃣ Export Cookies from Medium
+1. Open Chrome → Log in to [https://medium.com](https://medium.com)
+2. Use [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg)
+3. Export cookies and save as `cookies.json` in your project root
+
+### 6️⃣ Run Locally (Headless)
 ```bash
 xvfb-run python main.py
 ```
 
-### 6️⃣ Trigger via GitHub Action
+### 7️⃣ Trigger via GitHub Action
 Go to **Actions tab** → Run the `Publish Blog to Medium (Gemini)` workflow manually.
 
 ---
 
 ## 📌 Notes
-- Make sure your Medium account supports login via email/password (not SSO).
-- Gemini Pro offers **60 free API calls/day** — enough for blog generation.
+- Medium no longer supports password login via automation; cookie-based login is required
+- Gemini Pro offers **60 free API calls/day** — sufficient for daily blogs
 - SerpAPI requires a free or paid key — sign up at [serpapi.com](https://serpapi.com)
 
 ---

@@ -3,6 +3,9 @@ import random, os
 import requests
 from dotenv import load_dotenv
 import google.generativeai as genai
+import pkg_resources
+
+print("Google GenAI SDK version:", pkg_resources.get_distribution("google-generativeai").version)
 
 load_dotenv()
 
