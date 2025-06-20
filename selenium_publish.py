@@ -78,6 +78,8 @@ def publish_to_medium(title, content):
 
     except Exception as e:
         print("❌ Error publishing to Medium:", str(e))
+        print("🔁 Saving blog locally as fallback...")
+        save_blog_to_file(title, content)
 
     finally:
         driver.quit()
