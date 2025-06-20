@@ -8,8 +8,7 @@ load_dotenv()
 
 # Gemini setup
 genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-model = genai.GenerativeModel("gemini-pro")
-
+model = genai.GenerativeModel(model_name="models/gemini-pro")
 
 def choose_topic():
     return random.choice(["DevOps", "AI", "Microservices", "Cloud"])
