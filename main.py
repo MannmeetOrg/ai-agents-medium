@@ -1,7 +1,11 @@
+# main.py
 import os
+import google.generativeai as genai
 from dotenv import load_dotenv
 from blog_utils import fetch_topic_ideas, select_top_topics, generate_blog
 from selenium_publish import publish_to_medium
+
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 load_dotenv()
 
