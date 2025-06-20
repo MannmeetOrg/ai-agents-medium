@@ -25,10 +25,10 @@ def select_top_topics(ideas):
 
 {}""".format("\n".join(f"- {i}" for i in ideas))
     try:
-        model = genai.GenerativeModel("gemini-1.5-flash")
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
         response = model.generate_content(prompt)
     except Exception:
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
         response = model.generate_content(prompt)
     lines = [line.strip("- ") for line in response.text.split("\n") if line.strip()]
     return lines[:5]
@@ -36,9 +36,9 @@ def select_top_topics(ideas):
 def generate_blog(topic):
     prompt = f"Write a detailed blog post on the topic: '{topic}' in simple, clear language for beginners. Include examples and use technical terms only when helpful."
     try:
-        model = genai.GenerativeModel("gemini-1.5-pro")
+        model = genai.GenerativeModel("models/gemini-1.5-pro-latest")
         response = model.generate_content(prompt)
     except Exception:
-        model = genai.GenerativeModel("gemini-pro")
+        model = genai.GenerativeModel("models/gemini-1.5-flash-latest")
         response = model.generate_content(prompt)
     return topic, response.text.strip()
