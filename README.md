@@ -1,105 +1,90 @@
-# README.md
 
-## 🤖 AI Blog Agent with Gemini Flash & Medium Automation
+# 🧠 AI Blog Agent Pipeline
 
-Automatically generate and publish blog articles on Medium using AI-generated content with **Gemini Flash** (fallback to Pro 2.5), topic ideas from Google Search, and Selenium automation.
+This project automates blog generation and publishing to [Medium.com](https://medium.com) using AI agents like OpenAI GPT and Gemini, SerpAPI, and browser automation with Selenium.
 
 ---
 
 ## 🚀 Features
-- 🔍 Automatically select trending tech topics (DevOps, AI, Cloud, Microservices)
-- 🤖 Uses **Gemini Flash** (fallback to **Pro 2.5**) for idea refinement and blog generation
-- 🌐 Uses **SerpAPI** to search for blog ideas
-- ✍️ Publishes blogs to your **Medium.com** account using Selenium and saved cookies
-- 🛠️ Integrated with **GitHub Actions** to run as a CI/CD automation pipeline
 
----
-
-## 🧩 Technologies Used
-- [Gemini API (Flash or Pro 2.5)](https://makersuite.google.com/app/apikey)
-- [SerpAPI](https://serpapi.com)
-- [Selenium](https://selenium.dev)
-- GitHub Actions
+- 🔍 Auto-selects topics from DevOps, AI, Microservices, Cloud.
+- 🌐 Scrapes 10 real blog titles using SerpAPI.
+- 🧠 Ranks titles using GPT-4 (fallback to Gemini API).
+- 📝 Writes a 700-word blog in simple technical English.
+- 🌍 Publishes automatically to Medium.com via Selenium.
+- 🔐 Uses GitHub Secrets and CI/CD to automate publishing.
 
 ---
 
 ## 📁 Project Structure
+
 ```
-├── .env                      # API keys for Gemini & SerpAPI
-├── main.py                   # Pipeline entrypoint
-├── blog_utils.py             # Gemini logic with fallback support
-├── selenium_publish.py       # Medium.com publishing automation using cookies.json
-├── cookies.json              # Exported cookies for Medium login
+.
+├── .env                      # API keys and secrets (never commit this)
+├── main.py                   # Entry point for the pipeline
+├── blog_utils.py             # AI logic for topic, search, ranking, blog generation
+├── selenium_publish.py       # Uses Selenium to automate Medium publishing
+├── cookies.json              # Exported Medium login cookies (EditThisCookie)
 ├── requirements.txt          # Python dependencies
-└── .github/workflows/publish.yml  # GitHub Actions pipeline
+└── .github/workflows/publish.yml  # GitHub Actions CI/CD pipeline
 ```
 
 ---
 
-## 🔧 Setup Instructions
+## 🛠 Setup Instructions
 
-### 1️⃣ Clone the Repository
-```bash
-git clone https://github.com/yourusername/ai-blog-agent.git
-cd ai-blog-agent
-```
+### 1. Install Dependencies
 
-### 2️⃣ Create `.env` File
 ```bash
-cp .env.example .env
-```
-Add your credentials to `.env`:
-```
-GEMINI_API_KEY=your_key_here
-SERPAPI_KEY=your_serpapi_key_here
-```
-
-### 3️⃣ Install Dependencies
-```bash
+python -m venv venv
+source venv/bin/activate  # or venv\Scripts\activate on Windows
 pip install -r requirements.txt
 ```
 
-### 4️⃣ Set Up GitHub Secrets (Optional for CI)
-In your GitHub repo → **Settings → Secrets → Actions**:
-- `GEMINI_API_KEY`
-- `SERPAPI_KEY`
+### 2. Create `.env` File
 
-### 5️⃣ Export Cookies from Medium
-1. Open [https://medium.com](https://medium.com) and login.
-2. Use [EditThisCookie](https://chrome.google.com/webstore/detail/editthiscookie/fngmhnnpilhplaeedifhccceomclgfbg) to export cookies.
-3. Save the exported cookies as `cookies.json` in your project root.
+```env
+OPENAI_API_KEY=your_openai_key
+SERPAPI_KEY=your_serpapi_key
+GEMINI_API_KEY=your_google_gemini_api_key
+```
 
-### 6️⃣ Run Locally (Headless)
+### 3. Export Medium Cookies
+
+- Login to [Medium](https://medium.com)
+- Use [EditThisCookie Chrome Extension](https://www.editthiscookie.com/)
+- Export cookies and save as `cookies.json`
+
+---
+
+## ⚙️ GitHub Actions Integration
+
+Set up `ENV_FILE` secret in your GitHub repository:
+
+- Go to **Settings > Secrets > New Repository Secret**
+- Name: `ENV_FILE`
+- Paste the full `.env` content
+
+Trigger the workflow manually or schedule it for automation.
+
+---
+
+## 🧪 To Run Locally
+
 ```bash
-xvfb-run python main.py
-```
-
-### 7️⃣ Trigger via GitHub Action
-Use **Actions** tab → `Publish Blog to Medium (Gemini)` workflow.
-
----
-
-## 📌 Notes
-- Cookie-based login is used due to Medium's restriction on automation
-- Gemini Flash is fast and economical; Pro 2.5 fallback ensures reliability
-- SerpAPI provides structured blog search results
-
----
-
-## 📮 Output Example
-```
-Chosen topic: Cloud
-Ideas fetched: [...]
-Top 5 topics: [...]
-✅ Blog published successfully.
+python main.py
 ```
 
 ---
 
-## 📜 License
-MIT License. Fork freely and start your blog automation!
+## 🧠 Future Improvements
+
+- Add content summarization or image generation
+- Use LangChain for custom embeddings
+- GUI-based blog customization
 
 ---
 
-## 🙋‍♀️ Created by
-**@manmeet.ai** — AI, DevOps & Content Automation ❤️
+## 📃 License
+
+This project is free and open for personal or educational use.

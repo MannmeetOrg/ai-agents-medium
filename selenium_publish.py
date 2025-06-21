@@ -1,85 +1,33 @@
-import json
-import os
-import time
+
 from selenium import webdriver
 from selenium.webdriver.common.by import By
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service
-from selenium.webdriver.support.ui import WebDriverWait
-from selenium.webdriver.support import expected_conditions as EC
-from webdriver_manager.chrome import ChromeDriverManager
+import json
+import time
 
-def save_blog_to_file(title, content):
-    safe_title = "".join(c for c in title if c.isalnum() or c in (' ', '_', '-')).rstrip()
-    filename = f"blog_output/{safe_title.replace(' ', '_')}.md"
+def load_cookies(driver, cookies_path="cookies.json"):
+    with open(cookies_path, "r") as f:
+        cookies = json.load(f)
+    for cookie in cookies:
+        driver.add_cookie(cookie)
 
-    os.makedirs("blog_output", exist_ok=True)
+def publish_to_medium(blog_content, title):
+    options = webdriver.ChromeOptions()
+    options.add_argument("--headless")
+    driver = webdriver.Chrome(options=options)
+    driver.get("https://medium.com/new-story")
+    time.sleep(5)
+    load_cookies(driver)
+    driver.refresh()
+    time.sleep(5)
 
-    with open(filename, "w", encoding="utf-8") as f:
-        f.write(f"# {title}\n\n{content}")
+    title_field = driver.find_element(By.TAG_NAME, "h1")
+    title_field.click()
+    title_field.send_keys(title)
+    time.sleep(2)
 
-    print(f"📝 Blog saved locally as {filename}")
+    content_area = driver.find_element(By.CLASS_NAME, "section-inner")
+    content_area.click()
+    content_area.send_keys(blog_content[:2000])  # Avoid overflow in demo
 
-def publish_to_medium(title, content):
-    options = Options()
-    options.add_argument("--headless=new")
-    options.add_argument("--no-sandbox")
-    options.add_argument("--disable-dev-shm-usage")
-    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()), options=options)
-
-    try:
-        wait = WebDriverWait(driver, 15)
-
-        # Step 1: Load Medium to set domain context
-        driver.get("https://medium.com")
-        time.sleep(3)
-
-        # Step 2: Load cookies from JSON
-        with open("cookies.json", "r") as f:
-            cookies = json.load(f)
-
-        for cookie in cookies:
-            if "sameSite" in cookie and cookie["sameSite"] not in ["Lax", "Strict", "None"]:
-                del cookie["sameSite"]
-            for field in ["storeId", "hostOnly", "session", "id"]:
-                cookie.pop(field, None)
-            driver.add_cookie(cookie)
-
-        # Step 3: Go to new story page
-        driver.get("https://medium.com/new-story")
-        wait.until(EC.presence_of_element_located((By.XPATH, "//h1")))
-        time.sleep(2)
-
-        # Step 4: Enter title
-        title_box = driver.find_element(By.XPATH, "//h1")
-        driver.execute_script("arguments[0].scrollIntoView(true);", title_box)
-        title_box.click()
-        title_box.send_keys(title)
-        time.sleep(2)
-
-        # Step 5: Enter content
-        body_box = wait.until(EC.element_to_be_clickable((By.XPATH, "//div[@role='textbox']")))
-        driver.execute_script("arguments[0].scrollIntoView(true);", body_box)
-        body_box.click()
-        body_box.send_keys(content)
-        time.sleep(5)
-
-        # Step 6: Publish
-        publish_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//span[text()='Publish']]")))
-        driver.execute_script("arguments[0].scrollIntoView(true);", publish_button)
-        publish_button.click()
-        time.sleep(2)
-
-        confirm_button = wait.until(EC.element_to_be_clickable((By.XPATH, "//button[.//span[text()='Publish now']]")))
-        confirm_button.click()
-        time.sleep(5)
-
-        print("✅ Blog successfully published to Medium!")
-
-    except Exception as e:
-        print("❌ Error publishing to Medium:", str(e))
-        print("🔁 Saving blog locally as fallback...")
-        save_blog_to_file(title, content)
-
-    finally:
-        driver.quit()
+    time.sleep(3)
+    driver.quit()

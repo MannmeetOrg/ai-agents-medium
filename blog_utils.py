@@ -1,43 +1,73 @@
+
 import os
-import google.generativeai as genai
-from dotenv import load_dotenv
+import random
 from serpapi import GoogleSearch
+import openai
+import requests
 
-load_dotenv()
+DOMAINS = ["DevOps", "AI", "Microservices", "Cloud Platform"]
+TOPIC_KEYWORDS = {
+    "DevOps": ["CI/CD", "GitOps", "Terraform", "Monitoring", "SRE"],
+    "AI": ["GenAI", "LLMs", "LangChain", "Vector DB", "Prompt Engineering"],
+    "Microservices": ["Service Mesh", "API Gateway", "gRPC", "Resilience", "Dapr"],
+    "Cloud Platform": ["AWS", "GCP", "Azure", "Serverless", "IAM", "Networking"]
+}
 
-GOOGLE_API_KEY = os.getenv("GEMINI_API_KEY")
-genai.configure(api_key=GOOGLE_API_KEY)
+def choose_topic():
+    domain = random.choice(DOMAINS)
+    topic = random.choice(TOPIC_KEYWORDS[domain])
+    return f"{domain} - {topic}"
 
-def get_model():
-    try:
-        return genai.GenerativeModel("gemini-1.5-flash")
-    except:
-        return genai.GenerativeModel("gemini-1.5-pro")
-
-def fetch_blog_ideas(query):
-    search = GoogleSearch({
-        "q": f"{query} blog ideas",
-        "api_key": os.getenv("SERPAPI_KEY")
-    })
+def search_titles(query):
+    params = {
+        "q": query,
+        "api_key": os.getenv("SERPAPI_KEY"),
+        "num": 10
+    }
+    search = GoogleSearch(params)
     results = search.get_dict()
-    return [r["title"] for r in results.get("organic_results", []) if "title" in r]
+    return [r["title"] for r in results.get("organic_results", [])]
 
-def get_best_topic(preferred_topics):
-    ideas = []
-    for topic in preferred_topics:
-        ideas += fetch_blog_ideas(topic)
+def rank_titles(titles, query):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    prompt = f"Rank these titles for clarity and informativeness on the topic '{query}':\n" + "\n".join(titles)
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.4
+        )
+        return response.choices[0].message["content"].split("\n")[:5]
+    except:
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        headers = {"Content-Type": "application/json"}
+        data = {"contents":[{"parts":[{"text": prompt}]}]}
+        response = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_api_key}",
+            headers=headers,
+            json=data
+        )
+        candidates = response.json().get("candidates", [])
+        return candidates[0]["content"]["parts"][0]["text"].split("\n")[:5] if candidates else titles[:5]
 
-    prompt = f"""You are a professional content strategist. Choose the 5 most interesting and educational blog post topics from the list below. Only return the selected titles:
-{ideas}
-"""
-    model = get_model()
-    response = model.generate_content(prompt)
-    lines = response.text.strip().splitlines()
-    filtered = [line.strip("- ").strip() for line in lines if line.strip()]
-    return filtered[0] if filtered else "DevOps Trends in 2025"
-
-def generate_blog(topic):
-    prompt = f"""Write a 500-word SEO-friendly blog post titled '{topic}'. Structure it with an engaging introduction, 3 subheadings with details, and a conclusion. Make it professional yet readable."""
-    model = get_model()
-    response = model.generate_content(prompt)
-    return topic, response.text
+def generate_blog(title):
+    openai.api_key = os.getenv("OPENAI_API_KEY")
+    prompt = f"Write a blog on the topic: '{title}' using simple English with technical details. Length: ~700 words."
+    try:
+        response = openai.ChatCompletion.create(
+            model="gpt-4",
+            messages=[{"role": "user", "content": prompt}],
+            temperature=0.5
+        )
+        return response.choices[0].message["content"]
+    except:
+        gemini_api_key = os.getenv("GEMINI_API_KEY")
+        headers = {"Content-Type": "application/json"}
+        data = {"contents":[{"parts":[{"text": prompt}]}]}
+        response = requests.post(
+            f"https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent?key={gemini_api_key}",
+            headers=headers,
+            json=data
+        )
+        candidates = response.json().get("candidates", [])
+        return candidates[0]["content"]["parts"][0]["text"] if candidates else ""

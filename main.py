@@ -1,26 +1,10 @@
-# main.py
-import os
-import google.generativeai as genai
-from dotenv import load_dotenv
-from blog_utils import get_best_topic, generate_blog
+
+from blog_utils import choose_topic, search_titles, rank_titles, generate_blog
 from selenium_publish import publish_to_medium
 
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-load_dotenv()
-def main():
-    preferred_topics = ["DevOps", "AI/ML", "Cloud Platforms"]
-
-    print("✅ Filtering blog ideas based on preferred topics...")
-    best_topic = get_best_topic(preferred_topics)
-    print("Chosen topic:", best_topic)
-
-    title, content = generate_blog(best_topic)
-    print("Generated title:", title)
-    print("Generated content preview:\n", content[:500], "...")
-
-    publish_to_medium(title, content)
-
-if __name__ == "__main__":
-    main()
-
+query = choose_topic()
+titles = search_titles(query)
+top_titles = rank_titles(titles, query)
+best_title = top_titles[0]
+blog = generate_blog(best_title)
+publish_to_medium(blog, best_title)
