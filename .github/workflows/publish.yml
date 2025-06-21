@@ -20,10 +20,15 @@ jobs:
         run: |
           pip install -r requirements.txt
 
-      - name: Run Publish Script
+      - name: Set environment
+        run: echo "${{ secrets.ENV_FILE }}" > .env
+
+      - name: Run blog pipeline and Scripts
         env:
-          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-          MEDIUM_USERNAME: ${{ secrets.MEDIUM_USERNAME }}
-          MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASSWORD }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          MEDIUM_USERNAME: ${{ secrets.MEDIUM_USER }}
+          MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASS }}
+
         run: python main.py
