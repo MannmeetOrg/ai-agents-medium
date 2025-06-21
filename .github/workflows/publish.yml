@@ -24,11 +24,6 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
-          MEDIUM_USERNAME : ${{ secrets.MEDIUM_USERNAME }}
-          MEDIUM_PASSWORD : ${{ secrets.MEDIUM_PASSWORD }}
-
-      - name: Set environment
-        run: echo "${{ secrets.ENV_FILE }}" > .env
-
-      - name: Run blog pipeline
+          MEDIUM_USERNAME: ${{ secrets.MEDIUM_USERNAME }}
+          MEDIUM_PASSWORD: ${{ secrets.MEDIUM_PASSWORD }}
         run: python main.py
