@@ -1,5 +1,5 @@
 
-name: Auto Publish Blog to Medium
+name: Publish Blog to Medium
 
 on:
   workflow_dispatch:
