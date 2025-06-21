@@ -20,6 +20,13 @@ jobs:
         run: |
           pip install -r requirements.txt
 
+      - name: Run Publish Script
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          MEDIUM_USERNAME : ${{ secrets.MEDIUM_USERNAME }}
+          MEDIUM_PASSWORD : ${{ secrets.MEDIUM_PASSWORD }}
+
       - name: Set environment
         run: echo "${{ secrets.ENV_FILE }}" > .env
 
