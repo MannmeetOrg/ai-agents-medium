@@ -1,7 +1,7 @@
 import os
 import google.generativeai as genai
 from dotenv import load_dotenv
-from serpapi.google_search import GoogleSearch
+from serpapi import GoogleSearch
 
 load_dotenv()
 
